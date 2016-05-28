@@ -12,11 +12,12 @@ class Game:
         self.interface = interface
         self.player = Player()
         self.map = Map()
+        self.map.maze_fill()
         self.map.tiles[5][5].stack.append(self.player)
-        self.map.tiles[5][7].stack.append(Boulder())
-        self.map.tiles[5][8].stack.append(Boulder())
-        self.map.tiles[7][7].stack.append(Pillar())
-        self.map.tiles[10][20].stack.append(Potion())
+        #self.map.tiles[5][7].stack.append(Boulder())
+        #self.map.tiles[5][8].stack.append(Boulder())
+        #self.map.tiles[7][7].stack.append(Pillar())
+        #self.map.tiles[10][20].stack.append(Potion())
         """
         mapdata = open("/home/yury/map", "r")
         i = 1
