@@ -17,7 +17,7 @@ class CursesInterface(Interface):
         self.map = curses.newpad(self.height - 1, self.width)
         self.status = curses.newpad(1, self.width)
         self.player = None
-        self.selecting = None
+        self.selection = None
 
     def init_curses(self):
         self.stdscr = curses.initscr()
@@ -30,57 +30,58 @@ class CursesInterface(Interface):
         curses.echo()
         curses.nocbreak()
         curses.endwin()
-    
+
+    def shift_selection(self, dr, dc):
+        if self.selection is None:
+            return
+        if (0 <= self.selection[0] + dr <= self.height - 3) and \
+                (0 <= self.selection[1] + dc <= self.width - 1):     
+            self.selection[0] += dr
+            self.selection[1] += dc
+            self.__refocus()
+
     def interact(self):
         self.message.erase()
         c = chr(self.map.getch())
         if c == "h":
-            if self.selecting:
-                self.selecting[1] -= 1
-                if self.selecting[1] < 0:
-                    self.selecting[1] = 0
-                self.__refocus()
-                return
-            return "move w"
+            if self.selection is None:
+                return "move w"
+            self.shift_selection(0, -1)
         elif c == "j":
-            if self.selecting:
-                self.selecting[0] += 1
-                if self.selecting[0] > self.height - 3:
-                    self.selecting[0] = self.height - 3
-                self.__refocus()
-                return
-            return "move s"
+            if self.selection is None:
+                return "move s"
+            self.shift_selection(1, 0)
         elif c == "k":
-            if self.selecting:
-                self.selecting[0] -= 1
-                if self.selecting[0] < 0:
-                    self.selecting[0] = 0
-                self.__refocus()
-                return
-            return "move n"
+            if self.selection is None:
+                return "move n"
+            self.shift_selection(-1, 0)
         elif c == "l":
-            if self.selecting:
-                self.selecting[1] += 1
-                if self.selecting[1] > self.width - 1:
-                    self.selecting[1] = self.width - 1
-                self.__refocus()
-                return
-            return "move e"
+            if self.selection is None:
+                return "move e"
+            self.shift_selection(0, 1)
         elif c == "y":
-            return "move nw"
+            if self.selection is None:
+                return "move nw"
+            self.shift_selection(-1, -1)
         elif c == "u":
-            return "move ne"
+            if self.selection is None:
+                return "move ne"
+            self.shift_selection(-1, 1)
         elif c == "b":
-            return "move sw"
+            if self.selection is None:
+                return "move sw"
+            self.shift_selection(1, -1)
         elif c == "n":
-            return "move se"
+            if self.selection is None:
+                return "move se"
+            self.shift_selection(1, 1)
         elif c == " ":
             self.__refresh_message()
             self.__refocus()
         elif c == ".":
-            if self.selecting:
-                target = self.selecting
-                self.selecting = None
+            if self.selection:
+                target = self.selection
+                self.selection = None
                 self.__refocus()
                 return "pathfind %s %s" % tuple(target)
         elif c == "v":
@@ -89,10 +90,10 @@ class CursesInterface(Interface):
             except:
                 pass
         elif c == "_":
-            if self.selecting:
-                self.selecting = None
+            if self.selection:
+                self.selection = None
             else:
-                self.selecting = list(self.player.position)
+                self.selection = list(self.player.position)
             #return "pathfind"
         elif c == "q":
             return "quit"
@@ -202,8 +203,8 @@ class CursesInterface(Interface):
     def __refocus(self, nout=False):
         if self.player == None:
             return
-        if self.selecting:
-            self.map.move(*self.selecting)
+        if self.selection:
+            self.map.move(*self.selection)
         else:
             self.map.move(self.player.position[0], self.player.position[1])
         self.__refresh_map(nout)

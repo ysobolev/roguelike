@@ -107,16 +107,26 @@ class Game:
     def pathfind(self, target):
         map = self.player.map
         known = defaultdict(list)
-        for r in range(1, map.size[0] - 1):
-            for c in range(1, map.size[1] - 1):
+        for r in range(0, map.size[0]):
+            for c in range(0, map.size[1]):
                 if not map.tiles[r][c].known or not map.tiles[r][c].passable:
                     continue
-                if map.tiles[r+1][c].known and map.tiles[r+1][c].passable:
-                    known[(r, c)].append(((r+1, c), 1))
-                    known[(r+1, c)].append(((r, c), 1))
-                if map.tiles[r][c+1].known and map.tiles[r][c+1].passable:
-                    known[(r, c)].append(((r, c+1), 1))
+                e = map.get_tile((r, c+1))
+                se = map.get_tile((r+1, c+1))
+                s = map.get_tile((r+1, c))
+                sw = map.get_tile((r+1, c-1))
+                if e.known and e.passable:
                     known[(r, c+1)].append(((r, c), 1))
+                    known[(r, c)].append(((r, c+1), 1))
+                if se.known and se.passable:
+                    known[(r+1, c+1)].append(((r, c), 1))
+                    known[(r, c)].append(((r+1, c+1), 1))
+                if s.known and s.passable:
+                    known[(r+1, c)].append(((r, c), 1))
+                    known[(r, c)].append(((r+1, c), 1))
+                if sw.known and sw.passable:
+                    known[(r+1, c-1)].append(((r, c), 1))
+                    known[(r, c)].append(((r+1, c-1), 1))
         def heuristic(x, y):
             return abs(x[0] - y[0]) + abs(x[1] - y[1])
         path = a_star(known, self.player.position, target, heuristic)
@@ -125,15 +135,8 @@ class Game:
         path.pop(0)
         for element in path:
             position = self.player.position
-            direction = ""
-            if position[0] > element[0]:
-                direction = "n"
-            elif position[0] < element[0]:
-                direction = "s"
-            elif position[1] > element[1]:
-                direction = "w"
-            elif position[1] < element[1]:
-                direction = "e"
+            direction = Direction.cardinals[(element[0] - position[0],
+                                             element[1] - position[1])]
             self.handle_command("move %s" % direction)
 
     def handle_displacement(self, direction):
