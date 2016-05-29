@@ -57,6 +57,8 @@ class CursesInterface(Interface):
                 self.player.visibility = int(self.ask_phrase("New visibility radius: "))
             except:
                 pass
+        elif c == "_":
+            return "pathfind"
         elif c == "q":
             return "quit"
         elif c == "~":

@@ -3,6 +3,9 @@ from rl.core.map import Direction
 from rl.core.player import Player
 from rl.core.objects import *
 import copy
+from rl.core.astar import a_star
+from collections import defaultdict
+import time
 
 class GameExit(Exception):
     pass
@@ -72,6 +75,8 @@ class Game:
             direction = tokens[1]
             self.handle_move(direction)
             self.interface.update(self.player)
+        elif tokens[0] == "pathfind":
+            self.pathfind()
         elif tokens[0] == "quit":
             response = self.interface.ask("Quit? (y/N) ")
             if response.lower() == "y":
@@ -92,6 +97,38 @@ class Game:
         elif target_tile.is_occupied():
             self.handle_displacement(direction)
         self.update_map()
+
+    def pathfind(self):
+        map = self.player.map
+        known = defaultdict(list)
+        for r in range(1, map.size[0] - 1):
+            for c in range(1, map.size[1] - 1):
+                if not map.tiles[r][c].known or not map.tiles[r][c].passable:
+                    continue
+                if map.tiles[r+1][c].known and map.tiles[r+1][c].passable:
+                    known[(r, c)].append(((r+1, c), 1))
+                    known[(r+1, c)].append(((r, c), 1))
+                if map.tiles[r][c+1].known and map.tiles[r][c+1].passable:
+                    known[(r, c)].append(((r, c+1), 1))
+                    known[(r, c+1)].append(((r, c), 1))
+        def heuristic(x, y):
+            return abs(x[0] - y[0]) + abs(x[1] - y[1])
+        path = a_star(known, self.player.position, (5, 5), heuristic)
+        if path == None:
+            return
+        path.pop(0)
+        for element in path:
+            position = self.player.position
+            direction = ""
+            if position[0] > element[0]:
+                direction = "n"
+            elif position[0] < element[0]:
+                direction = "s"
+            elif position[1] > element[1]:
+                direction = "w"
+            elif position[1] < element[1]:
+                direction = "e"
+            self.handle_command("move %s" % direction)
 
     def handle_displacement(self, direction):
         """Attempt to displace target."""
