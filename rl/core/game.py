@@ -7,6 +7,8 @@ from rl.core.astar import a_star
 from collections import defaultdict
 import time
 
+from rl.core.levels import create_empty, create_maze, create_room
+
 class GameExit(Exception):
     pass
 
@@ -15,7 +17,9 @@ class Game:
         self.interface = interface
         self.player = Player()
         self.map = Map()
-        self.map.maze_fill()
+        #self.map.maze_fill()
+        create_room(self.map, ((10, 16), (10, 16)))
+        create_maze(self.map, ((10, 16), (17, 30)))
         self.map.tiles[5][5].stack.append(self.player)
         #self.map.tiles[5][7].stack.append(Boulder())
         #self.map.tiles[5][8].stack.append(Boulder())

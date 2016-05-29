@@ -8,10 +8,7 @@ class Map:
         if size == None:
             size = (22, 80)
         self.size = size
-        self.tiles = [[tileset.WallTile() for i in range(size[1])] for j in range(size[0])]
-        for i in range(1, 21):
-            for j in range(1, 79):
-                self.tiles[i][j] = tileset.WallTile()
+        self.tiles = [[tileset.FloorTile() for i in range(size[1])] for j in range(size[0])]
 
     def get_tile(self, position):
         if position[0] < 0 or position[0] >= self.size[0]:
@@ -21,6 +18,7 @@ class Map:
         return self.tiles[position[0]][position[1]]
 
     def maze_fill(self):
+        return
         graph = {}
         for i in range(1, 21, 2):
             for j in range(1, 79, 2):
