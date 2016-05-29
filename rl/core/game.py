@@ -80,7 +80,9 @@ class Game:
             self.handle_move(direction)
             self.interface.update(self.player)
         elif tokens[0] == "pathfind":
-            self.pathfind()
+            r = int(tokens[1])
+            c = int(tokens[2])
+            self.pathfind((r, c))
         elif tokens[0] == "quit":
             response = self.interface.ask("Quit? (y/N) ")
             if response.lower() == "y":
@@ -102,7 +104,7 @@ class Game:
             self.handle_displacement(direction)
         self.update_map()
 
-    def pathfind(self):
+    def pathfind(self, target):
         map = self.player.map
         known = defaultdict(list)
         for r in range(1, map.size[0] - 1):
@@ -117,7 +119,7 @@ class Game:
                     known[(r, c+1)].append(((r, c), 1))
         def heuristic(x, y):
             return abs(x[0] - y[0]) + abs(x[1] - y[1])
-        path = a_star(known, self.player.position, (5, 5), heuristic)
+        path = a_star(known, self.player.position, target, heuristic)
         if path == None:
             return
         path.pop(0)

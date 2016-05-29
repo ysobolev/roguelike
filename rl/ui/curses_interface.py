@@ -17,6 +17,7 @@ class CursesInterface(Interface):
         self.map = curses.newpad(self.height - 1, self.width)
         self.status = curses.newpad(1, self.width)
         self.player = None
+        self.selecting = None
 
     def init_curses(self):
         self.stdscr = curses.initscr()
@@ -34,12 +35,36 @@ class CursesInterface(Interface):
         self.message.erase()
         c = chr(self.map.getch())
         if c == "h":
+            if self.selecting:
+                self.selecting[1] -= 1
+                if self.selecting[1] < 0:
+                    self.selecting[1] = 0
+                self.__refocus()
+                return
             return "move w"
         elif c == "j":
+            if self.selecting:
+                self.selecting[0] += 1
+                if self.selecting[0] > self.height - 3:
+                    self.selecting[0] = self.height - 3
+                self.__refocus()
+                return
             return "move s"
         elif c == "k":
+            if self.selecting:
+                self.selecting[0] -= 1
+                if self.selecting[0] < 0:
+                    self.selecting[0] = 0
+                self.__refocus()
+                return
             return "move n"
         elif c == "l":
+            if self.selecting:
+                self.selecting[1] += 1
+                if self.selecting[1] > self.width - 1:
+                    self.selecting[1] = self.width - 1
+                self.__refocus()
+                return
             return "move e"
         elif c == "y":
             return "move nw"
@@ -52,13 +77,23 @@ class CursesInterface(Interface):
         elif c == " ":
             self.__refresh_message()
             self.__refocus()
+        elif c == ".":
+            if self.selecting:
+                target = self.selecting
+                self.selecting = None
+                self.__refocus()
+                return "pathfind %s %s" % tuple(target)
         elif c == "v":
             try:
                 self.player.visibility = int(self.ask_phrase("New visibility radius: "))
             except:
                 pass
         elif c == "_":
-            return "pathfind"
+            if self.selecting:
+                self.selecting = None
+            else:
+                self.selecting = list(self.player.position)
+            #return "pathfind"
         elif c == "q":
             return "quit"
         elif c == "~":
@@ -167,7 +202,10 @@ class CursesInterface(Interface):
     def __refocus(self, nout=False):
         if self.player == None:
             return
-        self.map.move(self.player.position[0], self.player.position[1])
+        if self.selecting:
+            self.map.move(*self.selecting)
+        else:
+            self.map.move(self.player.position[0], self.player.position[1])
         self.__refresh_map(nout)
     
     def __render_tile(self, r, c, tile):
