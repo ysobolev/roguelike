@@ -10,6 +10,16 @@ class Map:
         self.size = size
         self.tiles = [[tileset.FloorTile() for i in range(size[1])] for j in range(size[0])]
 
+    def __getitem__(self, position):
+        return self.get_tile(position)
+    
+    def __setitem__(self, position, tile):
+        if position[0] < 0 or position[0] >= self.size[0]:
+            raise ValueError
+        if position[1] < 0 or position[1] >= self.size[1]:
+            raise ValueError
+        self.tiles[position[0]][position[1]] = tile
+
     def get_tile(self, position):
         if position[0] < 0 or position[0] >= self.size[0]:
             return tileset.ImpassableTile()
