@@ -106,30 +106,34 @@ class Game:
 
     def pathfind(self, target):
         map = self.player.map
-        known = defaultdict(list)
-        for r in range(0, map.size[0]):
-            for c in range(0, map.size[1]):
-                if not map.tiles[r][c].known or not map.tiles[r][c].passable:
-                    continue
-                e = map.get_tile((r, c+1))
-                se = map.get_tile((r+1, c+1))
-                s = map.get_tile((r+1, c))
-                sw = map.get_tile((r+1, c-1))
-                if e.known and e.passable:
-                    known[(r, c+1)].append(((r, c), 1))
-                    known[(r, c)].append(((r, c+1), 1))
-                if se.known and se.passable:
-                    known[(r+1, c+1)].append(((r, c), 1))
-                    known[(r, c)].append(((r+1, c+1), 1))
-                if s.known and s.passable:
-                    known[(r+1, c)].append(((r, c), 1))
-                    known[(r, c)].append(((r+1, c), 1))
-                if sw.known and sw.passable:
-                    known[(r+1, c-1)].append(((r, c), 1))
-                    known[(r, c)].append(((r+1, c-1), 1))
+        graph = defaultdict(list)
+        for position, tile in self.player.map:
+            if not tile.known or not tile.passable:
+                continue
+            e = Direction.e(position)
+            e_tile = map[e]
+            se = Direction.se(position)
+            se_tile = map[se]
+            s = Direction.s(position)
+            s_tile = map[s]
+            sw = Direction.sw(position)
+            sw_tile = map[sw]
+            if e_tile.known and e_tile.passable:
+                graph[e].append((position, 1))
+                graph[position].append((e, 1))
+            if se_tile.known and se_tile.passable:
+                graph[se].append((position, 1))
+                graph[position].append((se, 1))
+            if s_tile.known and s_tile.passable:
+                graph[s].append((position, 1))
+                graph[position].append((s, 1))
+            if sw_tile.known and sw_tile.passable:
+                graph[sw].append((position, 1))
+                graph[position].append((sw, 1))
         def heuristic(x, y):
-            return abs(x[0] - y[0]) + abs(x[1] - y[1])
-        path = a_star(known, self.player.position, target, heuristic)
+            # need a fast admissible heuristic
+            return max(x[0] - y[0], x[1] - y[1])
+        path = a_star(graph, self.player.position, target, heuristic)
         if path == None:
             return
         path.pop(0)

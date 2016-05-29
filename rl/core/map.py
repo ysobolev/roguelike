@@ -27,9 +27,47 @@ class Map:
             return tileset.ImpassableTile()
         return self.tiles[position[0]][position[1]]
 
+    def __iter__(self):
+        for r in range(0, self.size[0]):
+            for c in range(0, self.size[1]):
+                yield (r, c), self.get_tile((r, c))
+
 class Direction:
     compass = {"n":(-1, 0), "s":(1, 0), "w":(0, -1), "e":(0, 1),
         "nw":(-1, -1), "ne":(-1, 1), "sw":(1, -1), "se":(1, 1)}
 
     cardinals = {(-1, 0):"n", (1, 0):"s", (0, -1):"w", (0, 1):"e",
         (-1, -1):"nw", (-1, 1):"ne", (1, -1):"sw", (1, 1):"se"}
+
+    @staticmethod
+    def e(position):
+        return (position[0], position[1] + 1)
+    
+    @staticmethod
+    def w(position):
+        return (position[0], position[1] - 1)
+    
+    @staticmethod
+    def n(position):
+        return (position[0] - 1, position[1])
+    
+    @staticmethod
+    def s(position):
+        return (position[0] + 1, position[1])
+    
+    @staticmethod
+    def ne(position):
+        return (position[0] - 1, position[1] + 1)
+    
+    @staticmethod
+    def nw(position):
+        return (position[0] - 1, position[1] - 1)
+    
+    @staticmethod
+    def se(position):
+        return (position[0] + 1, position[1] + 1)
+    
+    @staticmethod
+    def sw(position):
+        return (position[0] + 1, position[1] - 1)
+
