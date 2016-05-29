@@ -21,9 +21,11 @@ class CursesInterface(Interface):
 
     def init_curses(self):
         self.stdscr = curses.initscr()
+        curses.start_color()
         curses.cbreak()
         curses.noecho()
         self.stdscr.keypad(1)
+        curses.init_pair(1, curses.COLOR_BLUE, curses.COLOR_BLACK)
     
     def shutdown_curses(self):
         self.stdscr.keypad(0)
@@ -213,11 +215,14 @@ class CursesInterface(Interface):
         if tile.known:
             character = tiles[tile.type]
             if tile.type == "floor" and not tile.visible:
-                character = " "
-            self.map.addch(r, c, ord(character))
+                character = "."
+            color = 0
+            if not tile.visible:
+                color = 1
+            self.map.addch(r, c, ord(character), curses.color_pair(color))
             for item in tile.stack:
                 if tile.visible or item.mostly_fixed:
-                    self.map.addch(r, c, objects[item.type])
+                    self.map.addstr(r, c, objects[item.type])
 
 def run():
     interface = CursesInterface()
